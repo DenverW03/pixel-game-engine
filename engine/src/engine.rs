@@ -39,6 +39,7 @@ impl GameState {
             },
         );
         world.add_component(player, Player {});
+        world.add_component
 
         GameState {
             width,

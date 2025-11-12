@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 gilrs = "0.11.0"
+image = "0.25.8"
 pixels = "0.15.0"
 pollster = "0.4.0"
 winit = "0.30.12"
