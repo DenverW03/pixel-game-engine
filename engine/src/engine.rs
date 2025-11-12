@@ -48,15 +48,18 @@ impl GameState {
         }
     }
 
-    pub fn generate_frame(&self) -> Vec<u8> {
+    pub fn generate_frame(&mut self) -> Vec<u8> {
         let mut frame = vec![0x10; (self.width * self.height * RGBA_SIZE as u32) as usize];
 
         // Use tracked player entity
         let position = self.world.get_component::<Position>(self.player).unwrap();
         let size = self.world.get_component::<Size>(self.player).unwrap();
 
-        let mut switch = false;
-        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+        // Draw background first
+        self.draw_background(&mut frame);
+
+        //let mut switch = false;
+        /* for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
             let x = (i % self.width as usize) as i16;
             let y = (i / self.width as usize) as i16;
             let box_x = position.x as i16;
@@ -78,9 +81,16 @@ impl GameState {
             }
 
             switch = !switch;
-        }
+        } */
 
         frame
+    }
+
+    // TODO: Implement
+    fn draw_background(&mut self, frame: &mut Vec<u8>) {
+        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+            pixel.copy_from_slice(&[0x48, 0xb2, 0xe8, 0xff]);
+        }
     }
 
     // TODO: Implement
