@@ -1,4 +1,4 @@
-use crate::components::{Player, Position, Size, Velocity};
+use crate::components::{Player, Position, Size, Sprite, Velocity};
 use crate::ecs::{Entity, World};
 use crate::renderer::{create_app, create_event_loop, run};
 
@@ -39,7 +39,7 @@ impl GameState {
             },
         );
         world.add_component(player, Player {});
-        world.add_component
+        world.add_component(player, Sprite::new("Player.png"));
 
         GameState {
             width,
@@ -58,6 +58,9 @@ impl GameState {
 
         // Draw background first
         self.draw_background(&mut frame);
+
+        // Draw player sprite
+        self.draw_player(&mut frame);
 
         //let mut switch = false;
         /* for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
@@ -87,7 +90,6 @@ impl GameState {
         frame
     }
 
-    // TODO: Implement
     fn draw_background(&mut self, frame: &mut Vec<u8>) {
         for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
             pixel.copy_from_slice(&[0x48, 0xb2, 0xe8, 0xff]);
@@ -95,7 +97,28 @@ impl GameState {
     }
 
     // TODO: Implement
-    fn draw_player(&mut self, frame: Vec<u8>) {}
+    fn draw_player(&mut self, frame: &mut Vec<u8>) {
+        if let Some(sprite) = self.world.get_component_mut::<Sprite>(self.player) {
+            let position = self.world.get_component::<Position>(self.player).unwrap();
+            for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+                let player_x = position.x as i16;
+                let player_y = position.y as i16;
+                let x = (i % self.width as usize) as i16;
+                let y = (i / self.width as usize) as i16;
+                let size = self.world.get_component::<Size>(self.player).unwrap();
+
+                // nothing showing in render view
+                let in_sprite_bounds = x >= player_x
+                    && x < player_x + size.width as i16
+                    && y >= player_y
+                    && y < player_y + size.height as i16;
+
+                if in_sprite_bounds {
+                    pixel.copy_from_slice(&[0x5e, 0xb2, 0xe8, 0xff]);
+                }
+            }
+        }
+    }
 
     pub fn update_entity_positions(&mut self) {
         let entity_velocities: Vec<(Entity, Velocity)> = {
