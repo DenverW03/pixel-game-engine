@@ -96,37 +96,44 @@ impl GameState {
         }
     }
 
-    // TODO: Implement
     fn draw_player(&mut self, frame: &mut Vec<u8>) {
-        if let Some(sprite) = self.world.get_component_mut::<Sprite>(self.player) {
-            let image = sprite.image.as_ref().unwrap();
-            println!("{}", image.len());
-            let position = self
-                .world
-                .get_component_mut::<Position>(self.player)
-                .unwrap();
-            for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-                let player_x = position.x as i16;
-                let player_y = position.y as i16;
+        // Extract component data first
+        let (image, sprite_width) = {
+            let sprite = match self.world.get_component::<Sprite>(self.player) {
+                Some(s) => s,
+                None => return,
+            };
+            (sprite.image.as_ref().unwrap().clone(), sprite.width as i16)
+        };
 
-                let x = (i % self.width as usize) as i16;
-                let y = (i / self.width as usize) as i16;
+        let (player_x, player_y) = {
+            let position = self.world.get_component::<Position>(self.player).unwrap();
+            (position.x as i16, position.y as i16)
+        };
 
-                let player_size = self.world.get_component::<Size>(self.player).unwrap();
+        let (player_w, player_h) = {
+            let size = self.world.get_component::<Size>(self.player).unwrap();
+            (size.width as i16, size.height as i16)
+        };
 
-                // nothing showing in render view
-                let in_sprite_bounds = x >= player_x
-                    && x < player_x + player_size.width as i16
-                    && y >= player_y
-                    && y < player_y + player_size.height as i16;
+        // Draw loop
 
-                if in_sprite_bounds {
-                    // get pixel to paint
-                    let start_index: usize =
-                        (x - player_x) as usize + (y * sprite.width as i16) as usize;
-                    pixel.copy_from_slice(&image.get(start_index + 3..).unwrap());
-                    //pixel.copy_from_slice(&[0x5e, 0xb2, 0xe8, 0xff]);
-                }
+        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+            let x = (i % self.width as usize) as i16;
+            let y = (i / self.width as usize) as i16;
+
+            let in_sprite_bounds = x >= player_x
+                && x < player_x + player_w
+                && y >= player_y
+                && y < player_y + player_h;
+
+            if in_sprite_bounds {
+                let start_x = x - player_x;
+                let start_y = y - player_y;
+
+                let start_index = (start_x + start_y * sprite_width) as usize * 4;
+
+                pixel.copy_from_slice(&image[start_index..start_index + 4]);
             }
         }
     }
