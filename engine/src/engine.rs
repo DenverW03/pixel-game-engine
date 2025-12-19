@@ -98,12 +98,16 @@ impl GameState {
 
     fn draw_player(&mut self, frame: &mut Vec<u8>) {
         // Extract component data first
-        let (image, sprite_width) = {
+        let (image, sprite_width, sprite_height) = {
             let sprite = match self.world.get_component::<Sprite>(self.player) {
                 Some(s) => s,
                 None => return,
             };
-            (sprite.image.as_ref().unwrap().clone(), sprite.width as i16)
+            (
+                sprite.image.as_ref().unwrap().clone(),
+                sprite.width as i16,
+                sprite.height as i16,
+            )
         };
 
         let (player_x, player_y) = {
@@ -111,21 +115,15 @@ impl GameState {
             (position.x as i16, position.y as i16)
         };
 
-        let (player_w, player_h) = {
-            let size = self.world.get_component::<Size>(self.player).unwrap();
-            (size.width as i16, size.height as i16)
-        };
-
         // Draw loop
-
         for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
             let x = (i % self.width as usize) as i16;
             let y = (i / self.width as usize) as i16;
 
             let in_sprite_bounds = x >= player_x
-                && x < player_x + player_w
+                && x < player_x + sprite_width
                 && y >= player_y
-                && y < player_y + player_h;
+                && y < player_y + sprite_height;
 
             if in_sprite_bounds {
                 let start_x = x - player_x;
