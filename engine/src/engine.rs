@@ -91,8 +91,8 @@ impl GameState {
     }
 
     fn draw_background(&mut self, frame: &mut Vec<u8>) {
-        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-            pixel.copy_from_slice(&[0x48, 0xb2, 0xe8, 0xff]);
+        for (_i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+            pixel.copy_from_slice(&[0xe9, 0xe9, 0xe9, 0xd9]);
         }
     }
 
@@ -131,6 +131,9 @@ impl GameState {
 
                 let start_index = (start_x + start_y * sprite_width) as usize * 4;
 
+                if image[start_index..start_index + 4] == [0x00, 0x00, 0x00, 0x00] {
+                    continue;
+                }
                 pixel.copy_from_slice(&image[start_index..start_index + 4]);
             }
         }
